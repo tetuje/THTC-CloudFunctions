@@ -7,3 +7,18 @@ import * as functions from "firebase-functions";
 //   functions.logger.info("Hello logs!", {structuredData: true});
 //   response.send("Hello from Firebase!");
 // });
+
+// import firebase-admin = require("firebase-admin");
+import admin = require("firebase-admin");
+admin.initializeApp();
+
+export const addUser = functions
+    .region("europe-west3")
+    .auth.user()
+    .onCreate((user) => {
+      return admin
+          .firestore()
+          .collection("users")
+          .doc(user.uid)
+          .set(JSON.parse(JSON.stringify(user)));
+    });
