@@ -30,20 +30,19 @@ export const addUser = functions
 
 exports.scheduledFirestoreExport = functions.pubsub
     .schedule("every 168 hours")
+    .region("europe-west3")
     .onRun((context) => {
       const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT;
-      const databaseName = client.databasePath(projectId!, "(default)");
-      const today = new Date().toISOString().slice(0, 10);
-      const bucketFolder = bucket + "/" + today;
+      const databaseName = client.databasePath(projectId, "(default)");
 
       return client
           .exportDocuments({
             name: databaseName,
-            outputUriPrefix: bucketFolder,
+            outputUriPrefix: bucket,
             // Leave collectionIds empty to export all collections
             // or set to a list of collection IDs to export,
             // collectionIds: ['users', 'posts']
-            collectionIds: ["activities", "users"],
+            collectionIds: ["activities","users"],
           })
           .then((responses) => {
             const response = responses[0];
@@ -54,4 +53,3 @@ exports.scheduledFirestoreExport = functions.pubsub
             throw new Error("Export operation failed");
           });
     });
-

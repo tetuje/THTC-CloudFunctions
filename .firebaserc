@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "thtc-app"
-  }
+    "default": "thtc-app",
+    "THTC QA": "thtc-qa",
+    "THTC PROD": "thtc-prod"
+  },
+  "targets": {}
 }
