@@ -1,7 +1,6 @@
 import * as functions from "firebase-functions";
 import * as firestore from "@google-cloud/firestore";
 const client = new firestore.v1.FirestoreAdminClient();
-
 // Replace BUCKET_NAME
 const bucket = "gs://thtc-app.appspot.com/backups/automated-backups";
 
@@ -17,6 +16,9 @@ const bucket = "gs://thtc-app.appspot.com/backups/automated-backups";
 import admin = require("firebase-admin");
 admin.initializeApp();
 
+import firebasetools = require("firebase-tools");
+
+
 export const addUser = functions
     .region("europe-west3")
     .auth.user()
@@ -28,7 +30,9 @@ export const addUser = functions
           .set(JSON.parse(JSON.stringify(user)));
     });
 
-exports.scheduledFirestoreExport = functions.pubsub
+exports.scheduledFirestoreExport = functions
+    .region("europe-west3")
+    .pubsub
     .schedule("every 168 hours")
     .onRun((context) => {
       const projectId = process.env.GCP_PROJECT || process.env.GCLOUD_PROJECT;
@@ -55,3 +59,21 @@ exports.scheduledFirestoreExport = functions.pubsub
           });
     });
 
+exports.deleteUserData = functions
+    .region("europe-west3")
+    .auth
+    .user().onDelete((user) => {
+      const userID = user.uid;
+      const project = process.env.GCLOUD_PROJECT;
+      const path = `/users/${userID}`;
+
+      console.log("Removing user: ", userID);
+
+      firebasetools.firestore
+          .delete(path, {
+            project: process.env.GCLOUD_PROJECT,
+            recursive: true,
+            yes: true,
+            force: true,
+          });
+    });
